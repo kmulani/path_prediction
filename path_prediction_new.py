@@ -16,9 +16,11 @@ def kf_predict(meassurements):
 
 	initial_state_mean = [measurements[0, 0],0,measurements[0, 1],0]
 
-	transition_matrix = [[1, 0, 0.4, 0],[1, 0, 0.1, 0],[0, 0.2, 1, 1],[0.2, 0.5, 0.3, 1]] #TWEAK THIS BASED ON EXPERIMENTATION
+	#transition_matrix = [[1, 0, 0.4, 0],[1, 0, 0.1, 0],[0, 0.2, 1, 1],[0.2, 0.5, 0.3, 1]] #TWEAK THIS BASED ON EXPERIMENTATION
+	
+	transition_matrix = [[1, 0, 0, 0],[0, 1, 0, 0],[0, 0, 1, 0],[0, 0, 0, 1]]
 
-	observation_matrix = [[1, 0, 0, 0],[0, 0, 1, 0]]
+	observation_matrix = [[1, 0, 0, 0],[0, 1, 0, 0]]
 	
 	kf1 = KalmanFilter(transition_matrices = transition_matrix,observation_matrices = observation_matrix,initial_state_mean = initial_state_mean)
 
@@ -29,13 +31,13 @@ def kf_predict(meassurements):
 	x_now = smoothed_state_means[-1, :]
 	P_now = smoothed_state_covariances[-1, :]
 	
-	newMeasurement = np.ma.asarray(measurements[measurements.shape[0]-1])
+	#newMeasurement = np.ma.asarray(measurements[measurements.shape[0]-1])
 
 	#print "++++++++"
 	#print x_now
 	#print P_now
 	#print "+++++++++"
-	(x_now, P_now) = kf1.filter_update(filtered_state_mean = x_now,filtered_state_covariance = P_now, observation = newMeasurement) 
+	(x_now, P_now) = kf1.filter_update(filtered_state_mean = x_now,filtered_state_covariance = P_now, observation = None) 
 
 	#PLOTS - Comment out later
 	plt.figure(i)
@@ -43,8 +45,9 @@ def kf_predict(meassurements):
 	plt.hold(True)
 	times = range(measurements.shape[0])
 	plt.plot(times, measurements[:, 0], 'bo',times, measurements[:, 1], 'ro',times, smoothed_state_means[:, 0], 'b--',times, smoothed_state_means[:, 2], 'r--')
-	print x_now[0]
-	print x_now[1]
+	#print np.array(smoothed_state_means.shape)
+	#print x_now[0]
+	#print x_now[1]
 	#print np.array(times).shape[0] + 1
 	plt.plot([np.array(times).shape[0] +1], x_now[0],'xb', [np.array(times).shape[0] +1], x_now[1],'xr')
 	return (x_now)
@@ -60,7 +63,7 @@ def path_pred(data): #Give input as data from topic
 	#Shift in window 
 	over_ele  = 10 		#TWEAK THIS BASED ON EXPERIMENTATION
 	#Buffer Size
-	buffer_size = 20 	#TWEAK THIS BASED ON EXPERIMENTATION
+	buffer_size = 20	#TWEAK THIS BASED ON EXPERIMENTATION
 
 	k.append(data)
 	measurements = np.array(k)
@@ -76,16 +79,16 @@ def path_pred(data): #Give input as data from topic
 		flag = 1
 		#kf_blind(measurements)
 		
-		print "-----"
-		print measurements
-		print "-----"
+		#print "-----"
+		#print measurements
+		#print "-----"
 		k = list(overlap)
-		print k	
+		#print k	
 		if(over_ele > 0):
 			for i in range (0,(over_ele)) :
 				overlap.pop(0)	
-		print "------"
-		print overlap
+		#print "------"
+		#print overlap
 	
 	if (flag == 1):
 		return (x_now)
@@ -158,4 +161,5 @@ data = [327,236]
 data = path_pred(data)
 data = [307,220]
 data = path_pred(data) 
+print "Done!"
 plt.show() #Comment out later
